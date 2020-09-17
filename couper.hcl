@@ -55,6 +55,9 @@ server "couperConnect" {
         endpoint "/httpbin/**" {
             backend "httpbin" {
                 path = "/**"
+                swagger_definition = "./upstream/httpbin.yaml"
+                validate_request = true
+                validate_response = true
 
                 request_headers = {
                     x-env-user = ["override-user"]
