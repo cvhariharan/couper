@@ -13,6 +13,9 @@ type Backend struct {
 	Path           string   `hcl:"path,optional"`
 	Timeout        string   `hcl:"timeout,optional"`
 	TTFBTimeout    string   `hcl:"ttfb_timeout,optional"`
+	SwaggerDef     string   `hcl:"swagger_definition,optional"`
+	ValidateReq    bool     `hcl:"validate_request,optional"`
+	ValidateRes    bool     `hcl:"validate_response,optional"`
 }
 
 // Merge overrides the left backend configuration and returns a new instance.
@@ -60,6 +63,18 @@ func (b *Backend) Merge(other *Backend) (*Backend, []hcl.Body) {
 
 	if other.TTFBTimeout != "" {
 		result.TTFBTimeout = other.TTFBTimeout
+	}
+
+	if other.SwaggerDef != "" {
+		result.SwaggerDef = other.SwaggerDef
+	}
+
+	if other.ValidateReq {
+		result.ValidateReq = other.ValidateReq
+	}
+
+	if other.ValidateRes {
+		result.ValidateRes = other.ValidateRes
 	}
 
 	return &result, bodies

@@ -80,6 +80,9 @@ func BuildEntrypointHandlers(conf *config.Gateway, httpConf *HTTPConfig, log *lo
 				Path:           beConf.Path,
 				Timeout:        t,
 				TTFBTimeout:    ttfbt,
+				SwaggerDef:     beConf.SwaggerDef,
+				ValidateReq:    beConf.ValidateReq,
+				ValidateRes:    beConf.ValidateRes,
 			}, log, conf.Context)
 			if err != nil {
 				log.Fatal(err)
@@ -193,6 +196,9 @@ func BuildEntrypointHandlers(conf *config.Gateway, httpConf *HTTPConfig, log *lo
 						Path:           beConf.Path,
 						Timeout:        t,
 						TTFBTimeout:    ttfbt,
+						SwaggerDef:     beConf.SwaggerDef,
+						ValidateReq:    beConf.ValidateReq,
+						ValidateRes:    beConf.ValidateRes,
 					}, log, conf.Context)
 					if err != nil {
 						log.Fatal(err)
@@ -262,6 +268,9 @@ func BuildEntrypointHandlers(conf *config.Gateway, httpConf *HTTPConfig, log *lo
 					Path:           beConf.Path,
 					Timeout:        t,
 					TTFBTimeout:    ttfbt,
+					SwaggerDef:     beConf.SwaggerDef,
+					ValidateReq:    beConf.ValidateReq,
+					ValidateRes:    beConf.ValidateRes,
 				}, log, conf.Context)
 				if err != nil {
 					log.Fatal(err)
@@ -479,6 +488,9 @@ func newInlineBackend(evalCtx *hcl.EvalContext, inlineDef hcl.Body, cors *config
 		Path:           beConf.Path,
 		Timeout:        t,
 		TTFBTimeout:    ttfbt,
+		SwaggerDef:     beConf.SwaggerDef,
+		ValidateReq:    beConf.ValidateReq,
+		ValidateRes:    beConf.ValidateRes,
 	}, log, evalCtx)
 	return proxy, beConf, err
 }
