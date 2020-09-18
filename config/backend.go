@@ -13,7 +13,7 @@ type Backend struct {
 	Path           string   `hcl:"path,optional"`
 	Timeout        string   `hcl:"timeout,optional"`
 	TTFBTimeout    string   `hcl:"ttfb_timeout,optional"`
-	SwaggerDef     string   `hcl:"swagger_definition,optional"`
+	OpenAPIFile    string   `hcl:"openapi_file,optional"`
 	ValidateReq    bool     `hcl:"validate_request,optional"`
 	ValidateRes    bool     `hcl:"validate_response,optional"`
 }
@@ -65,8 +65,8 @@ func (b *Backend) Merge(other *Backend) (*Backend, []hcl.Body) {
 		result.TTFBTimeout = other.TTFBTimeout
 	}
 
-	if other.SwaggerDef != "" {
-		result.SwaggerDef = other.SwaggerDef
+	if other.OpenAPIFile != "" {
+		result.OpenAPIFile = other.OpenAPIFile
 	}
 
 	if other.ValidateReq {

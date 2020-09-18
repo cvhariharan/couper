@@ -55,7 +55,7 @@ type ProxyOptions struct {
 	ConnectTimeout, Timeout, TTFBTimeout time.Duration
 	Context                              []hcl.Body
 	BackendName                          string
-	Hostname, Origin, Path, SwaggerDef   string
+	Hostname, Origin, Path, OpenAPIFile  string
 	ValidateReq, ValidateRes             bool
 	CORS                                 *CORSOptions
 }
@@ -166,7 +166,7 @@ func (p *Proxy) preparetRequestValidatation(outreq *http.Request) (context.Conte
 		if err != nil {
 			return nil, nil, nil, err
 		}
-		router := openapi3filter.NewRouter().WithSwaggerFromFile(dir + "/" + p.options.SwaggerDef)
+		router := openapi3filter.NewRouter().WithSwaggerFromFile(dir + "/" + p.options.OpenAPIFile)
 		validationCtx := context.Background()
 		route, pathParams, _ := router.FindRoute(outreq.Method, outreq.URL)
 

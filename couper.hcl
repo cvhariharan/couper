@@ -55,7 +55,7 @@ server "couperConnect" {
         endpoint "/httpbin/**" {
             backend "httpbin" {
                 path = "/**"
-                swagger_definition = "./upstream/httpbin.yaml"
+                openapi_file = "./upstream/httpbin.yaml"
                 validate_request = true
                 validate_response = true
 

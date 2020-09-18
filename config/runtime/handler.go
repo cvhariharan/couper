@@ -80,7 +80,7 @@ func BuildEntrypointHandlers(conf *config.Gateway, httpConf *HTTPConfig, log *lo
 				Path:           beConf.Path,
 				Timeout:        t,
 				TTFBTimeout:    ttfbt,
-				SwaggerDef:     beConf.SwaggerDef,
+				OpenAPIFile:    beConf.OpenAPIFile,
 				ValidateReq:    beConf.ValidateReq,
 				ValidateRes:    beConf.ValidateRes,
 			}, log, conf.Context)
@@ -196,7 +196,7 @@ func BuildEntrypointHandlers(conf *config.Gateway, httpConf *HTTPConfig, log *lo
 						Path:           beConf.Path,
 						Timeout:        t,
 						TTFBTimeout:    ttfbt,
-						SwaggerDef:     beConf.SwaggerDef,
+						OpenAPIFile:    beConf.OpenAPIFile,
 						ValidateReq:    beConf.ValidateReq,
 						ValidateRes:    beConf.ValidateRes,
 					}, log, conf.Context)
@@ -268,7 +268,7 @@ func BuildEntrypointHandlers(conf *config.Gateway, httpConf *HTTPConfig, log *lo
 					Path:           beConf.Path,
 					Timeout:        t,
 					TTFBTimeout:    ttfbt,
-					SwaggerDef:     beConf.SwaggerDef,
+					OpenAPIFile:    beConf.OpenAPIFile,
 					ValidateReq:    beConf.ValidateReq,
 					ValidateRes:    beConf.ValidateRes,
 				}, log, conf.Context)
@@ -488,7 +488,7 @@ func newInlineBackend(evalCtx *hcl.EvalContext, inlineDef hcl.Body, cors *config
 		Path:           beConf.Path,
 		Timeout:        t,
 		TTFBTimeout:    ttfbt,
-		SwaggerDef:     beConf.SwaggerDef,
+		OpenAPIFile:    beConf.OpenAPIFile,
 		ValidateReq:    beConf.ValidateReq,
 		ValidateRes:    beConf.ValidateRes,
 	}, log, evalCtx)
