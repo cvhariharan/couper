@@ -262,18 +262,20 @@ func (p *Proxy) roundtrip(rw http.ResponseWriter, req *http.Request) {
 		outreq.Header.Set("X-Forwarded-For", clientIP)
 	}
 
+	roundtripInfo := req.Context().Value(request.RoundtripInfo).(*logging.RoundtripInfo)
+
 	validationCtx, route, requestValidationInput, err := p.preparetRequestValidatation(outreq)
 	if err != nil {
 		// this only happens if os.Getwd() fails
 		// TODO: use error template from parent endpoint>api>server
-		p.log.WithField("upstream request validation", err).Error()
+		roundtripInfo.Err = err
 		couperErr.DefaultJSON.ServeError(couperErr.UpstreamRequestValidationFailed).ServeHTTP(rw, req)
 		return
 	}
 	if requestValidationInput != nil {
 		if err := openapi3filter.ValidateRequest(validationCtx, requestValidationInput); err != nil {
 			// TODO: use error template from parent endpoint>api>server
-			p.log.WithField("upstream request validation", err).Error()
+			roundtripInfo.Err = err
 			if !p.options.OpenAPI.IgnoreRequestViolations {
 				couperErr.DefaultJSON.ServeError(couperErr.UpstreamRequestValidationFailed).ServeHTTP(rw, req)
 				return
@@ -282,8 +284,10 @@ func (p *Proxy) roundtrip(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	res, err := p.transport.RoundTrip(outreq)
-	roundtripInfo := req.Context().Value(request.RoundtripInfo).(*logging.RoundtripInfo)
-	roundtripInfo.BeReq, roundtripInfo.BeResp, roundtripInfo.Err = outreq, res, err
+	roundtripInfo.BeReq, roundtripInfo.BeResp = outreq, res
+	if err != nil {
+		roundtripInfo.Err = err
+	}
 	if err != nil {
 		// TODO: use error template from parent endpoint>api>server
 		couperErr.DefaultJSON.ServeError(couperErr.APIConnect).ServeHTTP(rw, req)
@@ -294,14 +298,14 @@ func (p *Proxy) roundtrip(rw http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		// this only happens if response body buffering fails
 		// TODO: use error template from parent endpoint>api>server
-		p.log.WithField("upstream response validation", err).Error()
+		roundtripInfo.Err = err
 		couperErr.DefaultJSON.ServeError(couperErr.UpstreamResponseBufferingFailed).ServeHTTP(rw, req)
 		return
 	}
 	if responseValidationInput != nil && route != nil {
 		if err := openapi3filter.ValidateResponse(validationCtx, responseValidationInput); err != nil {
 			// TODO: use error template from parent endpoint>api>server
-			p.log.WithField("upstream response validation", err).Error()
+			roundtripInfo.Err = err
 			if !p.options.OpenAPI.IgnoreResponseViolations {
 				couperErr.DefaultJSON.ServeError(couperErr.UpstreamResponseValidationFailed).ServeHTTP(rw, req)
 				return
