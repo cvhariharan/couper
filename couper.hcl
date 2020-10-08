@@ -55,9 +55,11 @@ server "couperConnect" {
         endpoint "/httpbin/**" {
             backend "httpbin" {
                 path = "/**"
-                openapi_file = "./upstream/httpbin.yaml"
-                validate_request = true
-                validate_response = true
+                openapi {
+                    file = "./upstream/httpbin.yaml"
+#                    ignore_request_violations = true
+#                    ignore_response_violations = true
+                }
 
                 request_headers = {
                     x-env-user = ["override-user"]

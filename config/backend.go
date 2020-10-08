@@ -13,9 +13,7 @@ type Backend struct {
 	Path           string   `hcl:"path,optional"`
 	Timeout        string   `hcl:"timeout,optional"`
 	TTFBTimeout    string   `hcl:"ttfb_timeout,optional"`
-	OpenAPIFile    string   `hcl:"openapi_file,optional"`
-	ValidateReq    bool     `hcl:"validate_request,optional"`
-	ValidateRes    bool     `hcl:"validate_response,optional"`
+	OpenAPI        *OpenAPI `hcl:"openapi,block"`
 }
 
 // Merge overrides the left backend configuration and returns a new instance.
@@ -65,16 +63,8 @@ func (b *Backend) Merge(other *Backend) (*Backend, []hcl.Body) {
 		result.TTFBTimeout = other.TTFBTimeout
 	}
 
-	if other.OpenAPIFile != "" {
-		result.OpenAPIFile = other.OpenAPIFile
-	}
-
-	if other.ValidateReq {
-		result.ValidateReq = other.ValidateReq
-	}
-
-	if other.ValidateRes {
-		result.ValidateRes = other.ValidateRes
+	if other.OpenAPI != nil {
+		result.OpenAPI = other.OpenAPI
 	}
 
 	return &result, bodies

@@ -55,9 +55,9 @@ type ProxyOptions struct {
 	ConnectTimeout, Timeout, TTFBTimeout time.Duration
 	Context                              []hcl.Body
 	BackendName                          string
-	Hostname, Origin, Path, OpenAPIFile  string
-	ValidateReq, ValidateRes             bool
+	Hostname, Origin, Path               string
 	CORS                                 *CORSOptions
+	OpenAPI                              *OpenAPIOptions
 }
 
 type CORSOptions struct {
@@ -100,6 +100,23 @@ func (c *CORSOptions) AllowsOrigin(origin string) bool {
 		}
 	}
 	return false
+}
+
+type OpenAPIOptions struct {
+	File                     string
+	IgnoreRequestViolations  bool
+	IgnoreResponseViolations bool
+}
+
+func NewOpenAPIOptions(openapi *config.OpenAPI) *OpenAPIOptions {
+	if openapi == nil {
+		return nil
+	}
+	return &OpenAPIOptions{
+		File:                     openapi.File,
+		IgnoreRequestViolations:  openapi.IgnoreRequestViolations,
+		IgnoreResponseViolations: openapi.IgnoreResponseViolations,
+	}
 }
 
 func NewProxy(options *ProxyOptions, log *logrus.Entry, evalCtx *hcl.EvalContext) (http.Handler, error) {
@@ -161,12 +178,12 @@ func (p *Proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 }
 
 func (p *Proxy) preparetRequestValidatation(outreq *http.Request) (context.Context, *openapi3filter.Route, *openapi3filter.RequestValidationInput, error) {
-	if p.options.ValidateReq || p.options.ValidateRes {
+	if p.options.OpenAPI != nil {
 		dir, err := os.Getwd()
 		if err != nil {
 			return nil, nil, nil, err
 		}
-		router := openapi3filter.NewRouter().WithSwaggerFromFile(dir + "/" + p.options.OpenAPIFile)
+		router := openapi3filter.NewRouter().WithSwaggerFromFile(dir + "/" + p.options.OpenAPI.File)
 		validationCtx := context.Background()
 		route, pathParams, _ := router.FindRoute(outreq.Method, outreq.URL)
 
@@ -181,7 +198,7 @@ func (p *Proxy) preparetRequestValidatation(outreq *http.Request) (context.Conte
 }
 
 func (p *Proxy) prepareResponseValidatation(requestValidationInput *openapi3filter.RequestValidationInput, res *http.Response) (*openapi3filter.ResponseValidationInput, []byte, error) {
-	if p.options.ValidateRes {
+	if p.options.OpenAPI != nil {
 		responseValidationInput := &openapi3filter.ResponseValidationInput{
 			RequestValidationInput: requestValidationInput,
 			Status:                 res.StatusCode,
@@ -253,12 +270,14 @@ func (p *Proxy) roundtrip(rw http.ResponseWriter, req *http.Request) {
 		couperErr.DefaultJSON.ServeError(couperErr.UpstreamRequestValidationFailed).ServeHTTP(rw, req)
 		return
 	}
-	if (p.options.ValidateReq) {
+	if requestValidationInput != nil {
 		if err := openapi3filter.ValidateRequest(validationCtx, requestValidationInput); err != nil {
 			// TODO: use error template from parent endpoint>api>server
 			p.log.WithField("upstream request validation", err).Error()
-			couperErr.DefaultJSON.ServeError(couperErr.UpstreamRequestValidationFailed).ServeHTTP(rw, req)
-			return
+			if !p.options.OpenAPI.IgnoreRequestViolations {
+				couperErr.DefaultJSON.ServeError(couperErr.UpstreamRequestValidationFailed).ServeHTTP(rw, req)
+				return
+			}
 		}
 	}
 
@@ -273,21 +292,20 @@ func (p *Proxy) roundtrip(rw http.ResponseWriter, req *http.Request) {
 
 	responseValidationInput, body, err := p.prepareResponseValidatation(requestValidationInput, res)
 	if err != nil {
+		// this only happens if response body buffering fails
 		// TODO: use error template from parent endpoint>api>server
 		p.log.WithField("upstream response validation", err).Error()
 		couperErr.DefaultJSON.ServeError(couperErr.UpstreamResponseBufferingFailed).ServeHTTP(rw, req)
 		return
 	}
-	if responseValidationInput != nil {
-		if route != nil {
-			if err := openapi3filter.ValidateResponse(validationCtx, responseValidationInput); err != nil {
-				// TODO: use error template from parent endpoint>api>server
-				p.log.WithField("upstream response validation", err).Error()
+	if responseValidationInput != nil && route != nil {
+		if err := openapi3filter.ValidateResponse(validationCtx, responseValidationInput); err != nil {
+			// TODO: use error template from parent endpoint>api>server
+			p.log.WithField("upstream response validation", err).Error()
+			if !p.options.OpenAPI.IgnoreResponseViolations {
 				couperErr.DefaultJSON.ServeError(couperErr.UpstreamResponseValidationFailed).ServeHTTP(rw, req)
 				return
 			}
-		} else {
-			p.log.Info("response validation enabled, but no route found")
 		}
 	}
 

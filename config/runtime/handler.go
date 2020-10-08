@@ -80,9 +80,7 @@ func BuildEntrypointHandlers(conf *config.Gateway, httpConf *HTTPConfig, log *lo
 				Path:           beConf.Path,
 				Timeout:        t,
 				TTFBTimeout:    ttfbt,
-				OpenAPIFile:    beConf.OpenAPIFile,
-				ValidateReq:    beConf.ValidateReq,
-				ValidateRes:    beConf.ValidateRes,
+				OpenAPI:        handler.NewOpenAPIOptions(beConf.OpenAPI),
 			}, log, conf.Context)
 			if err != nil {
 				log.Fatal(err)
@@ -196,9 +194,7 @@ func BuildEntrypointHandlers(conf *config.Gateway, httpConf *HTTPConfig, log *lo
 						Path:           beConf.Path,
 						Timeout:        t,
 						TTFBTimeout:    ttfbt,
-						OpenAPIFile:    beConf.OpenAPIFile,
-						ValidateReq:    beConf.ValidateReq,
-						ValidateRes:    beConf.ValidateRes,
+						OpenAPI:        handler.NewOpenAPIOptions(beConf.OpenAPI),
 					}, log, conf.Context)
 					if err != nil {
 						log.Fatal(err)
@@ -268,9 +264,7 @@ func BuildEntrypointHandlers(conf *config.Gateway, httpConf *HTTPConfig, log *lo
 					Path:           beConf.Path,
 					Timeout:        t,
 					TTFBTimeout:    ttfbt,
-					OpenAPIFile:    beConf.OpenAPIFile,
-					ValidateReq:    beConf.ValidateReq,
-					ValidateRes:    beConf.ValidateRes,
+					OpenAPI:        handler.NewOpenAPIOptions(beConf.OpenAPI),
 				}, log, conf.Context)
 				if err != nil {
 					log.Fatal(err)
@@ -488,9 +482,7 @@ func newInlineBackend(evalCtx *hcl.EvalContext, inlineDef hcl.Body, cors *config
 		Path:           beConf.Path,
 		Timeout:        t,
 		TTFBTimeout:    ttfbt,
-		OpenAPIFile:    beConf.OpenAPIFile,
-		ValidateReq:    beConf.ValidateReq,
-		ValidateRes:    beConf.ValidateRes,
+		OpenAPI:        handler.NewOpenAPIOptions(beConf.OpenAPI),
 	}, log, evalCtx)
 	return proxy, beConf, err
 }
