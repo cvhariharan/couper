@@ -71,6 +71,10 @@ func BuildEntrypointHandlers(conf *config.Gateway, httpConf *HTTPConfig, log *lo
 				beConf.ConnectTimeout = backendDefaultConnectTimeout
 			}
 			t, ttfbt, ct := parseBackendTimings(beConf)
+			openapiValidatorFactory, err := handler.NewOpenAPIValidatorFactory(beConf.OpenAPI)
+			if err != nil {
+				log.Fatal(err)
+			}
 			proxy, err := handler.NewProxy(&handler.ProxyOptions{
 				BackendName:    beConf.Name,
 				ConnectTimeout: ct,
@@ -80,7 +84,7 @@ func BuildEntrypointHandlers(conf *config.Gateway, httpConf *HTTPConfig, log *lo
 				Path:           beConf.Path,
 				Timeout:        t,
 				TTFBTimeout:    ttfbt,
-				OpenAPI:        handler.NewOpenAPIOptions(beConf.OpenAPI),
+				OpenAPI:        openapiValidatorFactory,
 			}, log, conf.Context)
 			if err != nil {
 				log.Fatal(err)
@@ -184,6 +188,10 @@ func BuildEntrypointHandlers(conf *config.Gateway, httpConf *HTTPConfig, log *lo
 					if err != nil {
 						log.Fatal(err)
 					}
+					openapiValidatorFactory, err := handler.NewOpenAPIValidatorFactory(beConf.OpenAPI)
+					if err != nil {
+						log.Fatal(err)
+					}
 					proxy, err := handler.NewProxy(&handler.ProxyOptions{
 						BackendName:    beConf.Name,
 						ConnectTimeout: ct,
@@ -194,7 +202,7 @@ func BuildEntrypointHandlers(conf *config.Gateway, httpConf *HTTPConfig, log *lo
 						Path:           beConf.Path,
 						Timeout:        t,
 						TTFBTimeout:    ttfbt,
-						OpenAPI:        handler.NewOpenAPIOptions(beConf.OpenAPI),
+						OpenAPI:        openapiValidatorFactory,
 					}, log, conf.Context)
 					if err != nil {
 						log.Fatal(err)
@@ -254,6 +262,10 @@ func BuildEntrypointHandlers(conf *config.Gateway, httpConf *HTTPConfig, log *lo
 				if err != nil {
 					log.Fatal(err)
 				}
+				openapiValidatorFactory, err := handler.NewOpenAPIValidatorFactory(beConf.OpenAPI)
+				if err != nil {
+					log.Fatal(err)
+				}
 				proxy, err := handler.NewProxy(&handler.ProxyOptions{
 					BackendName:    beConf.Name,
 					ConnectTimeout: ct,
@@ -264,7 +276,7 @@ func BuildEntrypointHandlers(conf *config.Gateway, httpConf *HTTPConfig, log *lo
 					Path:           beConf.Path,
 					Timeout:        t,
 					TTFBTimeout:    ttfbt,
-					OpenAPI:        handler.NewOpenAPIOptions(beConf.OpenAPI),
+					OpenAPI:        openapiValidatorFactory,
 				}, log, conf.Context)
 				if err != nil {
 					log.Fatal(err)
@@ -472,6 +484,10 @@ func newInlineBackend(evalCtx *hcl.EvalContext, inlineDef hcl.Body, cors *config
 	if err != nil {
 		return nil, nil, err
 	}
+	openapiValidatorFactory, err := handler.NewOpenAPIValidatorFactory(beConf.OpenAPI)
+	if err != nil {
+		log.Fatal(err)
+	}
 	proxy, err := handler.NewProxy(&handler.ProxyOptions{
 		BackendName:    beConf.Name,
 		ConnectTimeout: ct,
@@ -482,7 +498,7 @@ func newInlineBackend(evalCtx *hcl.EvalContext, inlineDef hcl.Body, cors *config
 		Path:           beConf.Path,
 		Timeout:        t,
 		TTFBTimeout:    ttfbt,
-		OpenAPI:        handler.NewOpenAPIOptions(beConf.OpenAPI),
+		OpenAPI:        openapiValidatorFactory,
 	}, log, evalCtx)
 	return proxy, beConf, err
 }
